@@ -109,6 +109,9 @@ void placeFlags()
       setColor(YELLOW);
   FOREACH_FACE(f)
   {
+    if ((getLastValueReceivedOnFace(f) != STANDBY) ||
+        (isValueReceivedOnFaceExpired(f)))
+        continue; 
     if (getLastValueReceivedOnFace(f) == STANDBY)
     {
      state = rand(2);
@@ -129,6 +132,6 @@ void placeFlags()
     }
   }
 
-  if (Player1Count < 2 && Player2Count < 2)
+  if (Player1Count != 2 && Player2Count != 2)
     placeFlags();
 }
