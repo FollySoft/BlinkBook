@@ -12,12 +12,15 @@ int Player2Clicked = 0;
 int Player1Score = 0;
 int Player2Score = 0;
 
+int gameState = 0;
+
 byte flag;
 
 
 enum Flags
 {
   //States of each individual tile while running.
+  STANDBY,
   PLAYER1,    //Red Tiles
   PLAYER2,    //Blue Tiles
   NONPLAYER,   //Random Colors excluding Red/BluE
@@ -25,37 +28,49 @@ enum Flags
 
 void setup() 
 {
-  setColor(OFF);
-  
   // put your setup code here, to run once:
 }
 
 void loop() 
-{
-  if (buttonDoubleClicked())
+{ 
+  if (gameState==0)
   {
-    placeFlags();
-  }
-
-  FOREACH_FACE(f)
-  {
-    if(didValueOnFaceChange(f))
-    flag = getLastValueReceivedOnFace(f);
-
-   switch(flag)
-   {
-      case PLAYER1:
-        setColor(RED);
-        break;
-      case PLAYER2:
-        setColor(BLUE);
-        break;
-      case NONPLAYER:
-        setColor(YELLOW);
-        break;
-   }
+    setColor(OFF);
+    FOREACH_FACE(f)
+      setValueSentOnFace(STANDBY,f);
+    if (buttonSingleClicked())
+    {
+        placeFlags();
+        gameState++;
+        setValueSentOnAllFaces(gameState);
+    }
   }
   
+  if (gameState == 1)
+  {
+    FOREACH_FACE(f)
+    {
+      if(didValueOnFaceChange(f))
+      flag = getLastValueReceivedOnFace(f);
+  
+     switch(flag)
+     {
+        case PLAYER1:
+          setColor(RED);
+          break;
+        case PLAYER2:
+          setColor(BLUE);
+          break;
+        case NONPLAYER:
+          setColor(YELLOW);
+          break;
+     }
+    }
+    if (buttonDoubleClicked())
+    {
+      gameState = 0;
+    }
+  }
 }
 
 void placeFlags()
@@ -75,7 +90,9 @@ void placeFlags()
       setColor(YELLOW);
   FOREACH_FACE(f)
   {
-    state = rand(2);
+    if (getLastValueReceivedOnFace(f) == STANDBY)
+    {
+     state = rand(2);
     if (state == 0 && Player1Count < 2)
     {
       flag = PLAYER1;
@@ -89,7 +106,8 @@ void placeFlags()
     else
       flag = NONPLAYER;
       
-   setValueSentOnFace(flag, f);
+   setValueSentOnFace(flag, f); 
+    }
   }
 
   if (Player1Count < 2 && Player2Count < 2)
