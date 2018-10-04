@@ -22,8 +22,8 @@ enum Flags
   //States of each individual tile while running.
   STANDBY,
   PLAYER1,    //Red Tiles
-  PLAYER2,    //Blue Tiles
-  PLAYER3,   //Random Colors excluding Red/BluE
+  PLAYER2    //Blue Tiles
+  //PLAYER3,   //Random Colors excluding Red/BluE
 };
 
 void setup() 
@@ -35,14 +35,16 @@ void loop()
 { 
   if (gameState==0)
   {
-    Player1Count = 0;
-    Player2Count = 0;
     FOREACH_FACE(f)
     {
       if (isValueReceivedOnFaceExpired(f))
         continue;
       if (getLastValueReceivedOnFace(f) == STANDBY)
+      {
+        Player1Count = 0;
+        Player2Count = 0;
         setColor(OFF);
+      }
     }
     if (buttonSingleClicked())
     {
@@ -74,64 +76,71 @@ void loop()
         case PLAYER2:
           setColor(BLUE);
           break;
-        case PLAYER3:
+       /* case PLAYER3:
           setColor(YELLOW);
           break;
+        */
      }
     }
     if (buttonDoubleClicked())
-    {
-      gameState = 0;
+    {    
       FOREACH_FACE(f)
       {
         setValueSentOnFace(STANDBY,f);
         if (getLastValueReceivedOnFace(f) == STANDBY)
           setColor(OFF);
       }
+      Player1Count = 0;
+      Player2Count = 0;
+      gameState = 0;
     }
   }
 }
 
 void placeFlags()
 {
-  int state = rand(2);
+  //int state = rand(2);
+  int state = rand(1);
   if (state == 0 && Player1Count < 2)
     {
       setColor(RED);
-      Player1Count++;
+      ++Player1Count;
     }
   else if (state == 1 && Player2Count < 2)
     {
       setColor(BLUE);
-      Player2Count++;
+      ++Player2Count;
     }
-  else
-      setColor(YELLOW);
-  FOREACH_FACE(f)
+  //else
+   //   setColor(YELLOW);
+  while (Player1Count != 2 && Player2Count != 2)
   {
-    if ((getLastValueReceivedOnFace(f) != STANDBY) ||
-        (isValueReceivedOnFaceExpired(f)))
-        continue; 
-    if (getLastValueReceivedOnFace(f) == STANDBY)
+    FOREACH_FACE(f)
     {
-     state = rand(2);
-      if (state == 0 && Player1Count < 2)
+      if ((getLastValueReceivedOnFace(f) != STANDBY) ||
+          (isValueReceivedOnFaceExpired(f)))
+          continue; 
+      else if (getLastValueReceivedOnFace(f) == STANDBY)
       {
-        flag = PLAYER1;
-        Player1Count++;
+       //state = rand(2);
+       state = rand(1);
+        if (state == 0 && Player1Count < 2)
+        {
+          flag = PLAYER1;
+          ++Player1Count;
+        }
+        else if (state == 1 && Player2Count < 2)
+        {
+          flag = PLAYER2;
+          ++Player2Count;
+        }
+        //else
+          //flag = PLAYER3;
       }
-      else if (state == 1 && Player2Count < 2)
-      {
-        flag = PLAYER2;
-        Player2Count++;
-      }
-      else
-        flag = PLAYER3;
-      
       setValueSentOnFace(flag, f); 
     }
   }
 
-  if (Player1Count != 2 && Player2Count != 2)
-    placeFlags();
+  //if (Player1Count != 2 && Player2Count != 2)
+    //placeFlags();
 }
