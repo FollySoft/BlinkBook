@@ -28,6 +28,7 @@ enum Flags
 
 void setup() 
 {
+  gameState = 0;
   setValueSentOnAllFaces(STANDBY);
 }
 
@@ -35,6 +36,9 @@ void loop()
 { 
   if (gameState==0)
   {
+    Player1Count = 0;
+    Player2Count = 0;
+    setColor(OFF);
     FOREACH_FACE(f)
     {
       if (isValueReceivedOnFaceExpired(f))
@@ -45,42 +49,44 @@ void loop()
         Player2Count = 0;
         setColor(OFF);
       }
+      else
+      {
+        gameState = 1;
+      }
     }
     if (buttonSingleClicked())
     {
         placeFlags();
         gameState = 1;
     }
-    FOREACH_FACE(f)
-    if(didValueOnFaceChange(f))
-      gameState = 1;
+    /*FOREACH_FACE(f)
+    {
+      if(didValueOnFaceChange(f))
+        gameState = 1;
+    }*/
   }
   
-  if (gameState == 1)
+  else if (gameState == 1)
   {
     FOREACH_FACE(f)
     {
-      if (isValueReceivedOnFaceExpired(f))
-        continue;
       if(didValueOnFaceChange(f))
-        flag = getLastValueReceivedOnFace(f);
-  
-     switch(flag)
-     {
-        case STANDBY:
-          setColor(OFF);
-          break;
-        case PLAYER1:
-          setColor(RED);
-          break;
-        case PLAYER2:
-          setColor(BLUE);
-          break;
-       /* case PLAYER3:
-          setColor(YELLOW);
-          break;
-        */
-     }
+      {
+         flag = getLastValueReceivedOnFace(f);
+         switch(flag)
+         {
+            case STANDBY:
+              gameState = 0;
+              setColor(OFF);
+              break;
+            case PLAYER1:
+              setColor(RED);
+              break;
+            case PLAYER2:
+              setColor(BLUE);
+              break;
+          }
+      }
     }
     if (buttonDoubleClicked())
     {    
@@ -111,36 +117,35 @@ void placeFlags()
       setColor(BLUE);
       ++Player2Count;
     }
-  //else
-   //   setColor(YELLOW);
-  while (Player1Count != 2 && Player2Count != 2)
+  FOREACH_FACE(f)
   {
-    FOREACH_FACE(f)
+    //Skip Inactive Face
+    if (getLastValueReceivedOnFace(f) != STANDBY)
+        continue;
+    // Randomize and send colors and states. 
+    else if (getLastValueReceivedOnFace(f) == STANDBY)
     {
-      if ((getLastValueReceivedOnFace(f) != STANDBY) ||
-          (isValueReceivedOnFaceExpired(f)))
-          continue; 
-      else if (getLastValueReceivedOnFace(f) == STANDBY)
+     state = rand(1);
+      if (state == 0 && Player1Count < 2)
       {
-       //state = rand(2);
-       state = rand(1);
-        if (state == 0 && Player1Count < 2)
-        {
-          flag = PLAYER1;
-          ++Player1Count;
-        }
-        else if (state == 1 && Player2Count < 2)
-        {
-          flag = PLAYER2;
-          ++Player2Count;
-        }
-        //else
-          //flag = PLAYER3;
+        flag = PLAYER1;
+        ++Player1Count;
       }
-      setValueSentOnFace(flag, f); 
+      else if (state == 1 && Player2Count < 2)
+      {
+        flag = PLAYER2;
+        ++Player2Count;
+      }    
     }
-  }
 
-  //if (Player1Count != 2 && Player2Count != 2)
-    //placeFlags();
+    //Ensure that only 2 of each piece is sent.
+    if (Player1Count != 2 && Player2Count != 2)
+    {
+      Player1Count = 0;
+      Player2Count = 0;
+      placeFlags(); 
+    }
+    else
+      setValueSentOnFace(flag, f); 
+  }
 }
