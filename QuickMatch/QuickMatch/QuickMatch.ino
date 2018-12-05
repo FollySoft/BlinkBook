@@ -128,24 +128,22 @@ void placeFlags()
      state = rand(1);
       if (state == 0 && Player1Count < 2)
       {
-        flag = PLAYER1;
+        setValueSentOnFace(PLAYER1, f);
         ++Player1Count;
       }
       else if (state == 1 && Player2Count < 2)
       {
-        flag = PLAYER2;
+        setValueSentOnFace(PLAYER2, f);
         ++Player2Count;
       }    
-    }
+    } 
+  }
 
-    //Ensure that only 2 of each piece is sent.
+      //Ensure that only 2 of each piece is sent.
     if (Player1Count != 2 && Player2Count != 2)
     {
       Player1Count = 0;
       Player2Count = 0;
       placeFlags(); 
     }
-    else
-      setValueSentOnFace(flag, f); 
-  }
 }
