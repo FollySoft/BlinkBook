@@ -57,13 +57,19 @@ void loop()
     if (buttonSingleClicked())
     {
         placeFlags();
-        gameState = 1;
+        //Ensure that only 2 of each piece is sent.
+        if (Player1Count != 2 || Player2Count != 2)
+        {
+          Player1Count = 0;
+          Player2Count = 0;
+          placeFlags(); 
+        }
+        else
+        {
+          gameState = 1;
+        }
+       
     }
-    /*FOREACH_FACE(f)
-    {
-      if(didValueOnFaceChange(f))
-        gameState = 1;
-    }*/
   }
   
   else if (gameState == 1)
@@ -138,12 +144,4 @@ void placeFlags()
       }    
     } 
   }
-
-      //Ensure that only 2 of each piece is sent.
-    if (Player1Count != 2 && Player2Count != 2)
-    {
-      Player1Count = 0;
-      Player2Count = 0;
-      placeFlags(); 
-    }
 }
