@@ -1,2 +1,2 @@
 # BlinkBook
-A COllection of projects for the "BLinks" platform by Move38.
+A collection of projects for the "Blinks" platform by Move38.
