@@ -12,7 +12,9 @@ int Player2Clicked = 0;
 int Player1Score = 0;
 int Player2Score = 0;
 
+// Tile State Info
 int gameState = 0;
+bool gameRef = false; //First tile that is clicked
 
 byte flag;
 
@@ -21,9 +23,9 @@ enum Flags
 {
   //States of each individual tile while running.
   STANDBY,
-  PLAYER1,    //Red Tiles
-  PLAYER2    //Blue Tiles
-  //PLAYER3,   //Random Colors excluding Red/BluE
+  PLAYER1,      //Red Tiles
+  PLAYER2       //Blue Tiles
+  //PLAYER3,    //Random Colors excluding Red/BluE
 };
 
 void setup() 
@@ -34,28 +36,36 @@ void setup()
 
 void loop() 
 { 
+  // ********** Waiting for Game to Start **********
   if (gameState==0)
   {
     Player1Count = 0;
     Player2Count = 0;
     setColor(OFF);
-    FOREACH_FACE(f)
+
+    // Check if anoter tile's button was pressed.
+    if (!gameRef)
     {
-      if (isValueReceivedOnFaceExpired(f))
-        continue;
-      if (getLastValueReceivedOnFace(f) == STANDBY)
+      FOREACH_FACE(f)
       {
-        Player1Count = 0;
-        Player2Count = 0;
-        setColor(OFF);
+        if (isValueReceivedOnFaceExpired(f))
+          continue;
+        if (getLastValueReceivedOnFace(f) == STANDBY)
+        {
+          Player1Count = 0;
+          Player2Count = 0;
+          setColor(OFF);
+        }
+        else
+        {
+          gameState = 1;
+        }
       }
-      else
-      {
-        gameState = 1;
-      }
-    }
+    }    
     if (buttonSingleClicked())
     {
+        gameRef = true;
+        //Send Player1/Player2 to each face.
         placeFlags();
         //Ensure that only 2 of each piece is sent.
         if (Player1Count != 2 || Player2Count != 2)
@@ -67,33 +77,36 @@ void loop()
         else
         {
           gameState = 1;
-        }
-       
+        }       
     }
   }
   
+  // ********** Game Started **********
   else if (gameState == 1)
   {
-    FOREACH_FACE(f)
+    if (!gameRef)
     {
-      if(didValueOnFaceChange(f))
+      FOREACH_FACE(f)
       {
-         flag = getLastValueReceivedOnFace(f);
-         switch(flag)
-         {
-            case STANDBY:
-              gameState = 0;
-              setColor(OFF);
-              break;
-            case PLAYER1:
-              setColor(RED);
-              break;
-            case PLAYER2:
-              setColor(BLUE);
-              break;
-          }
+        if(didValueOnFaceChange(f))
+        {
+           flag = getLastValueReceivedOnFace(f);
+           switch(flag)
+           {
+              case STANDBY:
+                gameState = 0;
+                setColor(OFF);
+                break;
+              case PLAYER1:
+                setColor(RED);
+                break;
+              case PLAYER2:
+                setColor(BLUE);
+                break;
+            }
+        }
       }
-    }
+    }    
     if (buttonDoubleClicked())
     {    
       FOREACH_FACE(f)
@@ -112,13 +125,13 @@ void loop()
 void placeFlags()
 {
   //int state = rand(2);
-  int state = rand(1);
-  if (state == 0 && Player1Count < 2)
+  int state = random(1);
+  if (state == 0)
     {
       setColor(RED);
       ++Player1Count;
     }
-  else if (state == 1 && Player2Count < 2)
+  else if (state == 1)
     {
       setColor(BLUE);
       ++Player2Count;
@@ -126,12 +139,12 @@ void placeFlags()
   FOREACH_FACE(f)
   {
     //Skip Inactive Face
-    if (getLastValueReceivedOnFace(f) != STANDBY)
+    if (getLastValueReceivedOnFace(f) != STANDBY || isValueReceivedOnFaceExpired(f))
         continue;
     // Randomize and send colors and states. 
-    else if (getLastValueReceivedOnFace(f) == STANDBY)
+    else
     {
-     state = rand(1);
+      state = random(1);
       if (state == 0 && Player1Count < 2)
       {
         setValueSentOnFace(PLAYER1, f);
@@ -141,7 +154,7 @@ void placeFlags()
       {
         setValueSentOnFace(PLAYER2, f);
         ++Player2Count;
-      }    
+      }  
     } 
   }
 }
