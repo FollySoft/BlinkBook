@@ -30,96 +30,82 @@ enum Flags
 
 void setup() 
 {
+  Player1Count = 0;
+  Player2Count = 0;
+  gameRef = false;
+  setColor(OFF);
   gameState = 0;
   setValueSentOnAllFaces(STANDBY);
 }
 
 void loop() 
-{ 
-  // ********** Waiting for Game to Start **********
-  if (gameState==0)
+{  
+  if (buttonDoubleClicked())
+  {    
+    setup();
+  } 
+  switch (gameState)
   {
-    Player1Count = 0;
-    Player2Count = 0;
-    setColor(OFF);
+    // ********** Waiting for Game to Start **********
+    case 0:
 
-    // Check if anoter tile's button was pressed.
-    if (!gameRef)
-    {
-      FOREACH_FACE(f)
+      // Check if anoter tile's button was pressed.
+      if (!gameRef)
       {
-        if (isValueReceivedOnFaceExpired(f))
-          continue;
-        if (getLastValueReceivedOnFace(f) == STANDBY)
+        FOREACH_FACE(f)
         {
-          Player1Count = 0;
-          Player2Count = 0;
-          setColor(OFF);
-        }
-        else
-        {
-          gameState = 1;
+          if (isValueReceivedOnFaceExpired(f) || getLastValueReceivedOnFace(f) == STANDBY)
+            continue;
+          else
+            gameState = 1;
         }
       }
-    }    
-    if (buttonSingleClicked())
-    {
-        gameRef = true;
-        //Send Player1/Player2 to each face.
-        placeFlags();
-        //Ensure that only 2 of each piece is sent.
-        if (Player1Count != 2 || Player2Count != 2)
-        {
-          Player1Count = 0;
-          Player2Count = 0;
-          placeFlags(); 
-        }
-        else
-        {
+      // Button was pressed, place flags and start game.  
+      if (buttonSingleClicked())
+      {
+          gameRef = true;
+          //Send Player1/Player2 to each face.
+          placeFlags();
+          //Ensure that only 2 of each piece is sent.
+          if (Player1Count != 2 || Player2Count != 2)
+          {
+            Player1Count = 0;
+            Player2Count = 0;
+            placeFlags(); 
+          }
           gameState = 1;
-        }       
-    }
+      }
+    break;
+    
+    // ********** Game Started **********
+    case 1:
+    
+      if (!gameRef)
+      {
+        FOREACH_FACE(f)
+        {
+          if(didValueOnFaceChange(f))
+          {
+             flag = getLastValueReceivedOnFace(f);
+             switch(flag)
+             {
+                case STANDBY:
+                  gameState = 0;
+                  setColor(OFF);
+                  break;
+                case PLAYER1:
+                  setColor(RED);
+                  break;
+                case PLAYER2:
+                  setColor(BLUE);
+                  break;
+              }
+          }
+        }
+      }          
+    break;
   }
   
-  // ********** Game Started **********
-  else if (gameState == 1)
-  {
-    if (!gameRef)
-    {
-      FOREACH_FACE(f)
-      {
-        if(didValueOnFaceChange(f))
-        {
-           flag = getLastValueReceivedOnFace(f);
-           switch(flag)
-           {
-              case STANDBY:
-                gameState = 0;
-                setColor(OFF);
-                break;
-              case PLAYER1:
-                setColor(RED);
-                break;
-              case PLAYER2:
-                setColor(BLUE);
-                break;
-            }
-        }
-      }
-    }    
-    if (buttonDoubleClicked())
-    {    
-      FOREACH_FACE(f)
-      {
-        setValueSentOnFace(STANDBY,f);
-        if (getLastValueReceivedOnFace(f) == STANDBY)
-          setColor(OFF);
-      }
-      Player1Count = 0;
-      Player2Count = 0;
-      gameState = 0;
-    }
-  }
 }
 
 void placeFlags()
