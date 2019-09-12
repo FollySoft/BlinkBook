@@ -57,14 +57,14 @@ void loop()
           if (isValueReceivedOnFaceExpired(f) || getLastValueReceivedOnFace(f) == STANDBY)
             continue;
           else
-            gameState = 1;
+            gameState = 2;
         }
       }
       // Button was pressed, place flags and start game.  
       if (buttonSingleClicked())
       {
           gameRef = true;
-          //Send Player1/Player2 to each face.
+          /* //Send Player1/Player2 to each face.
           placeFlags();
           //Ensure that only 2 of each piece is sent.
           if (Player1Count != 2 || Player2Count != 2)
@@ -72,13 +72,23 @@ void loop()
             Player1Count = 0;
             Player2Count = 0;
             placeFlags(); 
-          }
+          }*/
           gameState = 1;
       }
     break;
     
-    // ********** Game Started **********
+    // ********** Place Flags **********
     case 1:
+      if (gameRef)
+      {
+        placeFlags();
+        if (Player1Count == 2 && Player2Count == 2)
+          gameState = 2;
+      }
+    break;      
+
+    // ********** Game Started **********
+    case 2:
     
       if (!gameRef)
       {
