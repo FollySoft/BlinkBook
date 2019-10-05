@@ -1,9 +1,14 @@
 #include "Serial.h"
 
+//  "Doubles"
+//  A game by jwest.
+//  JJ
+
 /***************************
 
   TODO:
     - Seperate Color Update from gameState 2 to ensure no pre-mature colors display.
+      - Store flags in array when finished, signal FLAGSPLACED, place flags from array?
     - Remove buttonPress() condition to continue to gameState 3 after PlaceFlags.
 
 ****************************/    
@@ -15,6 +20,7 @@ bool countDownLED = false;
 // Should Max at 2
 int Player1Count = 0;
 int Player2Count = 0;
+int playerReady = 0;
 bool flagsPlaced = false;
 
 // Number of Tiles have been pressed.
@@ -29,8 +35,8 @@ int Player2Score = 0;
 // Tile State Info
 bool gameStart = false;
 int gameState = 0;
-bool gameRef = false; //First tile that is clicked
-int refFace = 0;      //Which face is the ref connected to.
+bool gameRef = false;     //First tile that is clicked
+bool refPressed = false;  //Keep track of ref button press
 
 bool Player1 = false;
 bool Player2 = false;
@@ -42,18 +48,21 @@ ServicePortSerial sp;
 enum Flags
 {
   //States of each individual tile while running.
-  STANDBY,
-  COUNTDOWN,
-  PLAYER1,      //Red Tiles
-  PLAYER2,      //Blue Tiles
-  PLAYER1PRESS,      //Red Tiles
-  PLAYER2PRESS,      //Blue Tiles
-  PLAYER1WIN,      //Red Tiles
-  PLAYER2WIN,      //Blue Tiles
-  NEWROUND,
-  FLAGSPLACED,
+  STANDBY,      // -> 0
+  COUNTDOWN,    // -> 1
+  PLAYER1,      // -> 2 (Red Tiles)
+  PLAYER2,      // -> 3 (Blue Tiles)
+  PLAYER1PRESS, // -> 4 
+  PLAYER2PRESS, // -> 5
+  PLAYER1WIN,   // -> 6
+  PLAYER2WIN,   // -> 7
+  NEWROUND,     // -> 8
+  FLAGSPLACED,  // -> 9
+  READY,        // -> 10
   //PLAYER3,    //Random Colors excluding Red/BluE
 };
+
+byte playerFaces[6];
 
 void setup() 
 {
@@ -68,6 +77,7 @@ void setup()
   // GameRef Variables
   gameRef = false;
   flagsPlaced = false;
+  refPressed = false;
   
   // Default State
   setColor(OFF);
@@ -75,7 +85,7 @@ void setup()
   setValueSentOnAllFaces(STANDBY);
 
   // Countdown Variables
-  countDownLED = true;
+  countDownLED = false;
   countDown = 8;
 
   // Start debug
@@ -116,11 +126,20 @@ void loop()
         {
           // Flags evenly placed, proceed.          
           flagsPlaced = true;
-          sp.println(F("SENT FLAGS"));
           //Force buttonPress check.
           //Ref gets automatic press on gameState 3 otherwise.
           buttonPressed();
-          gameState = 3;     
+          FOREACH_FACE(f)
+          /*{
+            setValueSentOnFace(f, FLAGSPLACED);
+          }*/
+          setValueSentOnAllFaces(FLAGSPLACED);
+          sp.println(F("SENT FLAGSPLACED"));
+
+          // Reset Player Count to re-use in next state.
+          //Player1Count = 0;
+          //Player2Count = 0;
+          gameState = 3;
         }
         else
         {
@@ -133,112 +152,51 @@ void loop()
       {
         FOREACH_FACE(f)
         {  
-          if(didValueOnFaceChange(f))
+          if(didValueOnFaceChange(f))          
           {            
-            flag = getLastValueReceivedOnFace(f);
-            sp.println(F("FLAG RECIEVED!"));
-            sp.println(flag);
+            flag = getLastValueReceivedOnFace(f);         
             switch(flag)
-             {
-                case STANDBY:
-                  setup();
-                  break;
+            {                
+                case FLAGSPLACED:
                 case PLAYER1:
-                  //setColor(RED);
-                  Player1 = true;
-                  Player2 = false;
-                  gameState = 3;           
-                  break;
                 case PLAYER2:
-                  //setColor(BLUE);
-                  Player1 = false;
-                  Player2 = true;                  
                   gameState = 3;
                   break;
-              }            
+            }            
           }              
         }
-      } 
-        // GameRef automatically goes to game state 3.    
+      }         
     break;
 
-    // ********** Update Colors, wait for presses **********
     case 3:
       sp.println(F("GameState 3"));
-      sp.println(F("Player1Clicked:")), 
-      sp.println(Player1Clicked);
-      sp.println(F("Player2Clicked:"));
-      sp.println(Player2Clicked);
-      //Player1Clicked = 0;
-      //Player2Clicked = 0;
-      if (Player1)
+      if (gameRef)        
       {
-        setColor(RED);
-        if (buttonPressed())
-        {        
-          if (gameRef)
-          {
-            sp.println(F("REF BUTTON PRESSED!"));
-            Player1Clicked++;
-          }
-          else
-          {            
-            setValueSentOnAllFaces(PLAYER1PRESS);
-            //gameState = 4;
-          }
-        }
-      }      
-      
-      else if (Player2)
-      {
-        setColor(BLUE);
-        if (buttonPressed())
-        {
-           if (gameRef)
-          {
-            sp.println(F("REF BUTTON PRESSED!"));
-            Player2Clicked++;
-          }
-          else
-          {            
-            setValueSentOnAllFaces(PLAYER2PRESS);
-            //gameState = 4;
-          }
-
-        }         
-      }      
-
-      // Victory checking for Ref Tile
-      if (gameRef)
-      {
-        if (Player1Clicked == 2)
-        {
-          /*setColor(RED);
-          setValueSentOnAllFaces(PLAYER1WIN);
-          gameState = 4;*/
-          Player1Score += 1;
-          startNewRound();
-        }
-        else if (Player2Clicked == 2)
-        {
-          /*setColor(BLUE);
-          setValueSentOnAllFaces(PLAYER2WIN);
-          gameState = 4;*/
-          Player2Score += 1;
-          startNewRound();
-        }
-
+        //Assign Player Values
         FOREACH_FACE(f)
         {
+          if (playerFaces[f] != 0)
+          {
+            setValueSentOnFace(f, playerFaces[f]);
+            sp.println(F("SENT TO FACE"));
+            sp.println(f);
+            sp.println(playerFaces[f]); 
+          }
+          //Listen for presses
           if (isValueReceivedOnFaceExpired(f))
           {
             continue;
           }
-          if(didValueOnFaceChange(f))
+          if (didValueOnFaceChange(f))
           {
-            flag = getLastValueReceivedOnFace(f);          
+            flag = getLastValueReceivedOnFace(f);
+            sp.println(F("FLAG RECIEVED!"));
+            sp.println(flag);   
             switch(flag)
-            {
+            {                
+                /*case STANDBY:
+                  setup();
+                  break;*/
                 case PLAYER1PRESS:
                   sp.println(F("OTHER BUTTON PRESSED!"));
                   Player1Clicked++;
@@ -246,44 +204,107 @@ void loop()
                 case PLAYER2PRESS:
                   sp.println(F("OTHER BUTTON PRESSED!"));
                   Player2Clicked++;
-                  break;
+                  break;        
             }
+          }
+        }
+
+        //Listen for ref button presses.
+        if (buttonPressed() && Player1 && !refPressed)
+        {
+          Player1Clicked++;
+          refPressed = true;
+        }
+        else if (buttonPressed() && Player2 && !refPressed)
+        {
+          Player2Clicked++;
+          refPressed = true;          
+        }
+
+        if (Player1Clicked == 2)
+        {
+          Player1Score++;
+          if (Player1Score == 10)
+          {
+            setValueSentOnAllFaces(PLAYER1WIN);
+            gameState = 4;
+          }
+          else
+          {
+            startNewRound();
           }          
-        }                          
+        }
+        else if (Player2Clicked == 2)
+        {
+          Player2Score++;
+          if (Player2Score == 10)
+          {
+            setValueSentOnAllFaces(PLAYER2WIN);
+            gameState = 4;
+          }
+          else
+          {
+            startNewRound();
+          }          
+        }
       }
-      // Victory checking for all other tiles.
-      else
+
+      else if (!gameRef)
       {
         FOREACH_FACE(f)
         {
           if (isValueReceivedOnFaceExpired(f))
+          {
             continue;
-          if (didValueOnFaceChange(f))
-            flag = getLastValueReceivedOnFace(f);          
+          }
+          else
+          {
+            flag = getLastValueReceivedOnFace(f);
+            sp.println(F("FLAG RECIEVED!"));
+            sp.println(flag);   
             switch(flag)
-            {
-                case NEWROUND:
-                  gameState = 2;
-                  startNewRound();
-                  break;
-                case STANDBY:
+            {                
+                /*case STANDBY:
                   setup();
+                  break;*/
+                case PLAYER1:
+                  setColor(RED);
+                  Player1 = true;
+                  Player2 = false;
                   break;
                 case PLAYER1WIN:
                   setColor(RED);
                   gameState = 4;
                   break;
+                case PLAYER2:
+                  setColor(BLUE);
+                  Player1 = false;
+                  Player2 = true;
+                  break;
                 case PLAYER2WIN:
                   setColor(BLUE);
                   gameState = 4;
                   break;
-                default:
-                  break;
-            }            
+                case NEWROUND:
+                  startNewRound();
+                  break; 
+            }   
+          }
+        }
+
+        // Send button press signal to ref.
+        if (buttonPressed() && Player1)
+        {
+          setValueSentOnAllFaces(PLAYER1PRESS);          
+        }
+        else if (buttonPressed() && Player2)
+        {
+          setValueSentOnAllFaces(PLAYER2PRESS);
         }
       }
     break;
 
+    // ********** Update Colors, wait for presses **********
     case 4:
       sp.println("GameState 4");
       if (!gameRef)
@@ -350,7 +371,7 @@ void standbyLoop()
 void countDownLoop()
 {
   // Countdown Yellow Flash
-  if (countDown > 0)
+  if (countDown > 1)
   {
     if (countDownLED) { setColor(YELLOW); }
     else { setColor(OFF); }
@@ -372,11 +393,11 @@ void countDownLoop()
     setColor(GREEN);
     if (countdownStep.isExpired())
     {              
-      //setColor(OFF);             
-      gameState = 2;
+      //setColor(OFF);                   
       setValueSentOnAllFaces(NEWROUND);
       sp.println(F("SENT NEWROUND FLAG"));
       sp.println(NEWROUND);
+      gameState = 2;
     }       
   }        
 }
@@ -411,11 +432,13 @@ void placeFlags()
       state = random(1);
       if (state == 0 && Player1Count < 2)
       {
+        playerFaces[f] = PLAYER1;
         setValueSentOnFace(PLAYER1, f);
         ++Player1Count;
       }
       else if (state == 1 && Player2Count < 2)
       {
+        playerFaces[f] = PLAYER2;
         setValueSentOnFace(PLAYER2, f);
         ++Player2Count;
       }  
