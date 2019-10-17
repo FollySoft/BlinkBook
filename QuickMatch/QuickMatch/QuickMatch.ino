@@ -7,9 +7,15 @@
 /***************************
 
   TODO:
-    - Seperate Color Update from gameState 2 to ensure no pre-mature colors display.
-      - Store flags in array when finished, signal FLAGSPLACED, place flags from array?
-    - Remove buttonPress() condition to continue to gameState 3 after PlaceFlags.
+    1) **** Non-ref tiles recieve NEWROUND right after entering state 3 ****
+        -> Removing NEWROUND case from non-ref switch affects the rand placement,
+        -> as ref tile relies on NEWROUND flag being sent from a face...
+        -> TRY: Setting refTileFace for nonRef when PLAYER1/PLAYER2 recieved?
+
+    2) Seperate Color Update from gameState 2 to ensure no pre-mature colors display.
+        - Store flags in array when finished, signal FLAGSPLACED, place flags from array?
+
+    3) Remove buttonPress() condition to continue to gameState 3 after PlaceFlags.
 
 ****************************/    
 Timer countdownStep;
@@ -37,6 +43,7 @@ bool gameStart = false;
 int gameState = 0;
 bool gameRef = false;     //First tile that is clicked
 bool refPressed = false;  //Keep track of ref button press
+int refTileFace = NULL;
 
 bool Player1 = false;
 bool Player2 = false;
@@ -129,13 +136,13 @@ void loop()
           //Force buttonPress check.
           //Ref gets automatic press on gameState 3 otherwise.
           buttonPressed();
-          FOREACH_FACE(f)
-          /*{
+          /*FOREACH_FACE(f)
+          {
             setValueSentOnFace(f, FLAGSPLACED);
-          }*/
-          setValueSentOnAllFaces(FLAGSPLACED);
+          }
+          //setValueSentOnAllFaces(FLAGSPLACED);
           sp.println(F("SENT FLAGSPLACED"));
-
+          */
           // Reset Player Count to re-use in next state.
           //Player1Count = 0;
           //Player2Count = 0;
@@ -160,6 +167,7 @@ void loop()
                 case FLAGSPLACED:
                 case PLAYER1:
                 case PLAYER2:
+                  refTileFace = f;
                   gameState = 3;
                   break;
             }            
@@ -268,6 +276,7 @@ void loop()
                   setup();
                   break;*/
                 case PLAYER1:
+                  refTileFace = f;
                   setColor(RED);
                   Player1 = true;
                   Player2 = false;
@@ -277,6 +286,7 @@ void loop()
                   gameState = 4;
                   break;
                 case PLAYER2:
+                  refTileFace = f;
                   setColor(BLUE);
                   Player1 = false;
                   Player2 = true;
@@ -286,21 +296,27 @@ void loop()
                   gameState = 4;
                   break;
                 case NEWROUND:
-                  startNewRound();
+                  if (f == refTileFace)
+                  {
+                    startNewRound();
+                  }                  
                   break; 
             }   
           }
         }
 
         // Send button press signal to ref.
-        if (buttonPressed() && Player1)
+        if (buttonPressed())
         {
-          setValueSentOnAllFaces(PLAYER1PRESS);          
-        }
-        else if (buttonPressed() && Player2)
-        {
-          setValueSentOnAllFaces(PLAYER2PRESS);
-        }
+          if (Player1)
+          {
+            setValueSentOnAllFaces(PLAYER1PRESS);
+          }
+          else if (Player2)
+          {
+            setValueSentOnAllFaces(PLAYER2PRESS);
+          }
+        }                  
       }
     break;
 
