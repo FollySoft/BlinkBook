@@ -7,10 +7,7 @@
 /***************************
 
   TODO:
-    1) **** Non-ref tiles recieve NEWROUND right after entering state 3 ****
-        -> Removing NEWROUND case from non-ref switch affects the rand placement,
-        -> as ref tile relies on NEWROUND flag being sent from a face...
-        -> TRY: Setting refTileFace for nonRef when PLAYER1/PLAYER2 recieved?
+    1) Blue Button Presses FAIL when REF tile is blue?
 
     2) Seperate Color Update from gameState 2 to ensure no pre-mature colors display.
         - Store flags in array when finished, signal FLAGSPLACED, place flags from array?
@@ -78,8 +75,10 @@ void setup()
   Player2Count = 0;
   Player1Clicked = 0;
   Player2Clicked = 0;
+  Player1Score = 0;
+  Player2Score = 0;
   Player1 = false;
-  Player2 = false;
+  Player2 = false;  
 
   // GameRef Variables
   gameRef = false;
@@ -136,16 +135,6 @@ void loop()
           //Force buttonPress check.
           //Ref gets automatic press on gameState 3 otherwise.
           buttonPressed();
-          /*FOREACH_FACE(f)
-          {
-            setValueSentOnFace(f, FLAGSPLACED);
-          }
-          //setValueSentOnAllFaces(FLAGSPLACED);
-          sp.println(F("SENT FLAGSPLACED"));
-          */
-          // Reset Player Count to re-use in next state.
-          //Player1Count = 0;
-          //Player2Count = 0;
           gameState = 3;
         }
         else
@@ -178,23 +167,26 @@ void loop()
 
     case 3:
       sp.println(F("GameState 3"));
-      if (gameRef)        
+      if (gameRef)
       {
         //Assign Player Values
         FOREACH_FACE(f)
         {
-          if (playerFaces[f] != 0)
-          {
-            setValueSentOnFace(f, playerFaces[f]);
-            sp.println(F("SENT TO FACE"));
-            sp.println(f);
-            sp.println(playerFaces[f]); 
-          }
-          //Listen for presses
+          //Update Player Faces
           if (isValueReceivedOnFaceExpired(f))
           {
             continue;
           }
+          if (playerFaces[f] != 0)
+          {
+            setValueSentOnFace(f, playerFaces[f]);
+            
+            //Debug values being sent on faces.
+            /*sp.println(F("SENT TO FACE"));
+            sp.println(f);
+            sp.println(playerFaces[f]); */
+          }
+          //Listen for presses
           if (didValueOnFaceChange(f))
           {
             flag = getLastValueReceivedOnFace(f);
@@ -218,15 +210,23 @@ void loop()
         }
 
         //Listen for ref button presses.
-        if (buttonPressed() && Player1 && !refPressed)
+        if (Player1 && !refPressed)
         {
-          Player1Clicked++;
-          refPressed = true;
+          if (buttonPressed())
+          {
+            sp.println(F("REF PRESSED!"));
+            Player1Clicked++;
+            refPressed = true;
+          }          
         }
-        else if (buttonPressed() && Player2 && !refPressed)
+        else if (Player2 && !refPressed)
         {
-          Player2Clicked++;
-          refPressed = true;          
+          if (buttonPressed())
+          {
+            sp.println(F("REF PRESSED!"));
+            Player2Clicked++;
+            refPressed = true;          
+          }          
         }
 
         if (Player1Clicked == 2)
@@ -234,6 +234,7 @@ void loop()
           Player1Score++;
           if (Player1Score == 10)
           {
+            setColor(RED);
             setValueSentOnAllFaces(PLAYER1WIN);
             gameState = 4;
           }
@@ -247,6 +248,7 @@ void loop()
           Player2Score++;
           if (Player2Score == 10)
           {
+            setColor(BLUE);
             setValueSentOnAllFaces(PLAYER2WIN);
             gameState = 4;
           }
@@ -464,6 +466,7 @@ void placeFlags()
 
 void startNewRound()
 {  
+  refPressed = false;
   flagsPlaced = false;
   Player1 = false;
   Player2 = false;
