@@ -7,12 +7,17 @@
 /***************************
 
   TODO:
-    1) Blue Button Presses FAIL when REF tile is blue?
+    1) Ref tile ocassionally stuck in random loop.
+        -> Corallated to "PLAYER1PRESS" flag continuously being sent?
+        -> Reconsider how to determine "active" player faces?
 
-    2) Seperate Color Update from gameState 2 to ensure no pre-mature colors display.
-        - Store flags in array when finished, signal FLAGSPLACED, place flags from array?
+    2) 3 Tiles ocassionally same color instead of 2.
 
-    3) Remove buttonPress() condition to continue to gameState 3 after PlaceFlags.
+    3) Find a way to ensure 3 blinks are connected before starting countdown.
+
+    4) FInd a way to allow re-connection if formation breaks.
+
+    5) Remove buttonPress() condition to continue to gameState 3 after PlaceFlags?
 
 ****************************/    
 Timer countdownStep;
@@ -169,22 +174,30 @@ void loop()
       sp.println(F("GameState 3"));
       if (gameRef)
       {
+        if (Player1)
+        {
+          sp.println(F("REF IS PLAYER 1!"));
+        }
+        if (Player2)
+        {
+          sp.println(F("REF IS PLAYER 2!"));
+        }
         //Assign Player Values
         FOREACH_FACE(f)
         {
           //Update Player Faces
-          if (isValueReceivedOnFaceExpired(f))
+          /*if (isValueReceivedOnFaceExpired(f))
           {
             continue;
-          }
+          }*/
           if (playerFaces[f] != 0)
           {
             setValueSentOnFace(f, playerFaces[f]);
             
             //Debug values being sent on faces.
-            /*sp.println(F("SENT TO FACE"));
+            sp.println(F("SENT TO FACE"));
             sp.println(f);
-            sp.println(playerFaces[f]); */
+            sp.println(playerFaces[f]); 
           }
           //Listen for presses
           if (didValueOnFaceChange(f))
@@ -271,38 +284,40 @@ void loop()
           {
             flag = getLastValueReceivedOnFace(f);
             sp.println(F("FLAG RECIEVED!"));
-            sp.println(flag);   
+            sp.println(flag);
+            if (f == refTileFace)
+            {
+              switch (flag)
+              {
+                  case NEWROUND:
+                    startNewRound();
+                    break;
+                  case PLAYER1:                    
+                    setColor(RED);
+                    Player1 = true;
+                    Player2 = false;
+                    break;
+                  case PLAYER2:
+                    refTileFace = f;
+                    setColor(BLUE);
+                    Player1 = false;
+                    Player2 = true;
+                    break; 
+              }
+            } 
             switch(flag)
             {                
                 /*case STANDBY:
                   setup();
                   break;*/
-                case PLAYER1:
-                  refTileFace = f;
-                  setColor(RED);
-                  Player1 = true;
-                  Player2 = false;
-                  break;
                 case PLAYER1WIN:
                   setColor(RED);
                   gameState = 4;
-                  break;
-                case PLAYER2:
-                  refTileFace = f;
-                  setColor(BLUE);
-                  Player1 = false;
-                  Player2 = true;
                   break;
                 case PLAYER2WIN:
                   setColor(BLUE);
                   gameState = 4;
                   break;
-                case NEWROUND:
-                  if (f == refTileFace)
-                  {
-                    startNewRound();
-                  }                  
-                  break; 
             }   
           }
         }
@@ -440,6 +455,10 @@ void placeFlags()
     }
   FOREACH_FACE(f)
   {
+    flag = getLastValueReceivedOnFace(f);
+    sp.println(F("VALUE RECIEVED OB FACE"));
+    sp.println(f);
+    sp.println(flag);
     //Skip Inactive Face
     if (isValueReceivedOnFaceExpired(f))
         continue;
@@ -474,6 +493,7 @@ void startNewRound()
   Player2Count = 0;
   Player1Clicked = 0;
   Player2Clicked = 0;
-  gameState = 2;  
+  gameState = 2;
+  buttonPressed();
   setValueSentOnAllFaces(NEWROUND);
 }
