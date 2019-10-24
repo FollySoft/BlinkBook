@@ -9,6 +9,7 @@
   TODO:
     1) Ref tile ocassionally stuck in random loop.
         -> Corallated to "PLAYER1PRESS" flag continuously being sent?
+          ->  Blinks with this flag being sent don't get random flags... 
         -> Reconsider how to determine "active" player faces?
 
     2) 3 Tiles ocassionally same color instead of 2.
@@ -151,6 +152,7 @@ void loop()
       }
       else if (!gameRef)
       {
+        setValueSentOnAllFaces(NEWROUND);
         FOREACH_FACE(f)
         {  
           if(didValueOnFaceChange(f))          
@@ -274,6 +276,19 @@ void loop()
 
       else if (!gameRef)
       {
+        // Send button press signal to ref.
+        if (buttonPressed())
+        {
+          if (Player1)
+          {
+            setValueSentOnAllFaces(PLAYER1PRESS);
+          }
+          else if (Player2)
+          {
+            setValueSentOnAllFaces(PLAYER2PRESS);
+          }
+        }
+
         FOREACH_FACE(f)
         {
           if (isValueReceivedOnFaceExpired(f))
@@ -284,6 +299,7 @@ void loop()
           {
             flag = getLastValueReceivedOnFace(f);
             sp.println(F("FLAG RECIEVED!"));
+            sp.println(f);
             sp.println(flag);
             if (f == refTileFace)
             {
@@ -297,8 +313,7 @@ void loop()
                     Player1 = true;
                     Player2 = false;
                     break;
-                  case PLAYER2:
-                    refTileFace = f;
+                  case PLAYER2:                    
                     setColor(BLUE);
                     Player1 = false;
                     Player2 = true;
@@ -321,19 +336,6 @@ void loop()
             }   
           }
         }
-
-        // Send button press signal to ref.
-        if (buttonPressed())
-        {
-          if (Player1)
-          {
-            setValueSentOnAllFaces(PLAYER1PRESS);
-          }
-          else if (Player2)
-          {
-            setValueSentOnAllFaces(PLAYER2PRESS);
-          }
-        }                  
       }
     break;
 
@@ -456,14 +458,14 @@ void placeFlags()
   FOREACH_FACE(f)
   {
     flag = getLastValueReceivedOnFace(f);
-    sp.println(F("VALUE RECIEVED OB FACE"));
+    sp.println(F("VALUE RECIEVED ON FACE"));
     sp.println(f);
     sp.println(flag);
     //Skip Inactive Face
     if (isValueReceivedOnFaceExpired(f))
         continue;
-    // Randomize and send colors and states. 
-    else if (getLastValueReceivedOnFace(f) == NEWROUND)
+    // Randomize and send colors and states.      
+    if (getLastValueReceivedOnFace(f) == NEWROUND)
     {
       sp.println(F("SENDING PLAYER FLAG"));
       state = random(1);
