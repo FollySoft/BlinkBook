@@ -5,7 +5,7 @@
 |------------------|:-----------------:|:--------------------:|-----------------:|
 |  4            | 2             |  Less than1 minute/round    | 12 & Up          |
 
-QuickMatch is a competitive reactionary game for 2-3 players. You must be faster than your oponents in matching two of the same colors.  The first player to match their color 10 times wins the game!
+QuickMatch is a competitive reactionary game for 2 players. You must be faster than your oponents in matching two of the same colors.  The first player to match their color 10 times wins the game!
 
 **Note**: The game is currently in Alpha, which means while it is playable, you are very likely to encounter bugs.  Keep an eye on this repository for updates!
 
