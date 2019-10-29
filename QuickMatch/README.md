@@ -20,9 +20,10 @@ QuickMatch is a competitive reactionary game for 2 players. You must be faster t
 ## SETUP
 Arrange the tiles so that one tile is touching all other tiles.  This tile will act as the "referee", keeping track of button presses and the overall score of the game.  Players pick a color (Red or Blue), and begin the game by pressing down the "referee" tile for 3 seconds.  A countdown will initialize (3 yellow flashes followed by a green flash), and the game will begin!
 
-
 ## GAMEPLAY
 Tiles in play will display player colors at random (2 Red, 2 Blue).  Players must be quick and press the two tiles that match their color before their opponent to score a point.  When the game detects that two tiles of the same color have been pressed, the tiles will re-randomize, starting a new round.
 
 ## WIN CONDITION
 The first player to match their color 10 times wins!  This will be indicated by all tiles in play displaying the winning player's color.
+
+To **reset** your board and start a new game, double-press any of the Blinks in play.
