@@ -5,26 +5,8 @@
 //  JJ
 
 /***************************
-
-  WHAT DID I DO LAST?
-  - Tweaked non-ref tiles to fetch whatever the most recent value recieved on 
-    refFace was, regardless of whether it changed or not.
-
-  ^^^^^^^ Why did I do this ^^^^^^^
-  I can't seem to pin down the unbalanced flag issue, but it definitely seems
-  to be the fault of the NON-REF TILE.  REF Tile sends all flags properly, rotating
-  one of the "stuck" player tiles will update it.
-
-
   TODO:
-    1) 3 Tiles ocassionally same color instead of 2.
-        ->  This is definitely something on the NON-REF tile side.  Rotating a 
-            tile that is "stuck" will eventually update it.
-            ->  This triggers the tile to detect a new round on what WAS the ref
-                tile face, it then updates to the NEW ref tile face.  
-                *** So the tile is missing the NEWROUND flag from the ref tile? ***
-
-    3) Find a way to ensure 3 blinks are connected before starting countdown.
+    1) Find a way to ensure 3 blinks are connected before starting countdown.
 
     4) FInd a way to allow re-connection if formation breaks.
 
@@ -81,7 +63,7 @@ enum Flags
   NEWROUND,     // -> 8
   FLAGSPLACED,  // -> 9
   READY,        // -> 10
-  //PLAYER3,    //Random Colors excluding Red/BluE
+  //PLAYER3,    //      (Yellow Tiles)
 };
 
 byte playerFaces[6];
@@ -305,10 +287,12 @@ void loop()
             setup();
             break;
           case NEWROUND:
+            //Send player back to State 2 to listen for new color.
             sp.println(F("NEWROUND RECIEVED!"));
             startNewRound();
-            break;
+            break;            
           case PLAYER1WIN:
+            //Go to gamestate 4 to announce winner.
             setColor(RED);
             gameState = 4;
             break;
