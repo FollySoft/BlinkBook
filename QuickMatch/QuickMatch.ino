@@ -6,11 +6,17 @@
 
 /***************************
   TODO:
-    1) Find a way to ensure 3 blinks are connected before starting countdown.
+    1. Code Refactor.
 
-    4) FInd a way to allow re-connection if formation breaks.
+    2. Find better solution for resetting a game (long Press?).
 
-    5) Remove buttonPress() condition to continue to gameState 3 after PlaceFlags?
+    3. Store previous flag placement to ensure you dont get same pattern twice.
+
+    4. Find a way to ensure 3 blinks are connected before starting countdown.
+
+    5. Find a way to allow re-connection if formation breaks.
+
+    6. Remove buttonPress() condition to continue to gameState 3 after PlaceFlags?
 
 ****************************/
 

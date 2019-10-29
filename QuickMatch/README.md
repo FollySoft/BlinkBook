@@ -10,10 +10,12 @@ QuickMatch is a competitive reactionary game for 2 players. You must be faster t
 **Note**: The game is currently in Alpha, which means while it is playable, you are very likely to encounter bugs.  Keep an eye on this repository for updates!
 
 ## To-Do
-1. Code Refactoring.
-2. Implement way to recover game if tiles get separated.
-3. Prevent getting the same randomized pattern twice in a row.
-4. Support for 3rd Player.
+1. Code Refactor.    
+2. Find better solution for resetting a game (long Press?).
+3. Store previous flag placement to ensure players dont get same pattern twice.
+4. Find a way to ensure 3 blinks are connected before starting countdown.
+5. Find a way to allow re-connection if formation breaks.
+6. Remove buttonPress() condition to continue to gameState 3 after PlaceFlags?
 
 ## SETUP
 Arrange the tiles so that one tile is touching all other tiles.  This tile will act as the "referee", keeping track of button presses and the overall score of the game.  Players pick a color (Red or Blue), and begin the game by pressing down the "referee" tile for 3 seconds.  A countdown will initialize (3 yellow flashes followed by a green flash), and the game will begin!
