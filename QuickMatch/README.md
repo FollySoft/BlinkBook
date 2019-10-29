@@ -15,7 +15,7 @@ QuickMatch is a competitive reactionary game for 2 players. You must be faster t
 3. Store previous flag placement to ensure players dont get same pattern twice.
 4. Find a way to ensure 3 blinks are connected before starting countdown.
 5. Find a way to allow re-connection if formation breaks.
-6. Remove buttonPress() condition to continue to gameState 3 after PlaceFlags?
+6. Player 3 Support.
 
 ## SETUP
 Arrange the tiles so that one tile is touching all other tiles.  This tile will act as the "referee", keeping track of button presses and the overall score of the game.  Players pick a color (Red or Blue), and begin the game by pressing down the "referee" tile for 3 seconds.  A countdown will initialize (3 yellow flashes followed by a green flash), and the game will begin!
