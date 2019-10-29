@@ -208,9 +208,9 @@ void loop()
             sp.println(flag);   
             switch(flag)
             {                
-                case STANDBY:
-                  setup();
-                  break;
+                //case STANDBY:
+                //  setup();
+                //  break;
                 case PLAYER1PRESS:
                   sp.println(F("OTHER BUTTON PRESSED!"));
                   Player1Clicked++;
@@ -283,9 +283,9 @@ void loop()
         //sp.println(flag);
         switch (flag)
         {            
-          case STANDBY:
-            setup();
-            break;
+          //case STANDBY:
+          //  setup();
+          //  break;
           case NEWROUND:
             //Send player back to State 2 to listen for new color.
             sp.println(F("NEWROUND RECIEVED!"));
