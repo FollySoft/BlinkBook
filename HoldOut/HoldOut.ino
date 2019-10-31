@@ -43,7 +43,7 @@ void loop()
 				readyLEDOn = !readyLEDOn;
 				if (readyLEDOn) { setColor(playerColor); }
 				else { setColor(OFF); }      
-				readyFlash.set(500);   // Flash again in 200 millseconds  
+				readyFlash.set(500);   // Flash again in 500 millseconds  
 			} 
 			if (buttonSingleClicked())
 			{
@@ -53,9 +53,9 @@ void loop()
 			break;
 		/********* Play State *********/
 		case 2:		
-			if (millis() % 2 == 0)
+			if (millis() % 3 == 0)
 			{
-				brightness -= 3;
+				brightness -= 5;
 				setColor(dim(playerColor, brightness));
 			}
 			if (buttonPressed()) { brightness = 255; }

@@ -15,7 +15,9 @@ Each player gets 1 tile.  Pressing the tile's button once will flash a randomize
 
 ## GAMEPLAY
 
-Press your Blink's button to give it life.  Keep your Blink alive... __by any means necessary__.
+Each Blink only has 1 second of life.  Press your Blink's button to give it another second.  
+
+Keep your Blink alive... __by any means necessary__.
 
 ## WIN CONDITION
 
