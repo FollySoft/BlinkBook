@@ -4,6 +4,9 @@
 //  A game by jwest.
 //  JJ
 
+Timer readyFlash;
+bool readyLEDOn = false;
+
 int playerCount = 0;
 bool playerFound = false;
 
@@ -14,9 +17,7 @@ Color playerColors[6] = {RED, ORANGE, YELLOW, GREEN, BLUE, MAGENTA};
 Color playerColor;
 
 void setup()
-{	
-	playerColor = playerColors[random(5)];
-	setColor(playerColor);
+{		
 	brightness = 255;
 	gameState = 0;
 }
@@ -25,32 +26,54 @@ void loop()
 {		
 	switch (gameState)
 	{
+		/********* Standby State *********/
 		case 0:
-			if (buttonDoubleClicked())
-			{
+			playerColor = playerColors[random(5)];
+			if (buttonSingleClicked())
+			{				
+				setColor(playerColor);
+				buttonPressed();
 				gameState = 1;
 			}
 			break;
+		/********* Ready State *********/
 		case 1:
-			if (buttonPressed())
+			if (readyFlash.isExpired()) 
 			{
-				brightness = 255;
+				readyLEDOn = !readyLEDOn;
+				if (readyLEDOn) { setColor(playerColor); }
+				else { setColor(OFF); }      
+				readyFlash.set(500);   // Flash again in 200 millseconds  
+			} 
+			if (buttonSingleClicked())
+			{
+				setColor(playerColor);	
+				gameState = 2;
+			}	
+			break;
+		/********* Play State *********/
+		case 2:		
+			if (millis() % 2 == 0)
+			{
+				brightness -= 3;
+				setColor(dim(playerColor, brightness));
 			}
+			if (buttonPressed()) { brightness = 255; }
 			if (brightness == 0)
 			{
 				setColor(OFF);
-				gameState = 2;
+				gameState = 3;
 			}
-			else
-			{
-				brightness = brightness - 1;
-				setColor(dim(playerColor, brightness));
-			}	
 			break;
-		case 2:
-		if (buttonDoubleClicked())
-		{
-			setup();
-		}
+		/********* Dead State *********/
+		case 3:
+			if (buttonDoubleClicked())
+			{
+				playerColor = playerColors[random(5)];
+				setColor(playerColor);
+				buttonPressed();
+				gameState = 1;
+			}
+			break;
 	}
 }
