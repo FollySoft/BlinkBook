@@ -11,12 +11,12 @@ The goal is simple: be the last person to keep your Blink alive.
 
 ## SETUP
 
-Connect all player tiles together.  When a tile detects a connection, it choose it's color and flash, indicating it's ready for the round.  Players can separate their tile from the group and press their tile's button to begin the round.
+Each player gets 1 tile.  Pressing the tile's button once will flash a randomized color, indicating it's ready for the round.  Pressing the button again begins the round.
 
 ## GAMEPLAY
 
-Press your Blink's button to give it life.  Keep your Blink alive *by any means necessary*.
+Press your Blink's button to give it life.  Keep your Blink alive... __by any means necessary__.
 
 ## WIN CONDITION
 
-The winner is the last person to keep their Blink alive.
+The winner is the last person to keep their Blink alive.  Double clicking the tile's button after it's light fades will return it to the "ready" state.
