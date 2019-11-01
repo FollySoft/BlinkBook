@@ -5,18 +5,21 @@
 //  JJ
 
 /***************************
+  
+  ********* WHAT DID I DO LAST? ************
+  Swapped out the long press and double press to start and reset tiles.
+  Long pressing to reset sometimes triggers the count down automatically though...
+
   TODO:
     1. Code Refactor.
 
-    2. Find better solution for resetting a game (long Press?).
+    2. Store previous flag placement to ensure you dont get same pattern twice.
 
-    3. Store previous flag placement to ensure you dont get same pattern twice.
+    3. Find a way to ensure 3 blinks are connected before starting countdown.
 
-    4. Find a way to ensure 3 blinks are connected before starting countdown.
+    4. Find a way to allow re-connection if formation breaks.
 
-    5. Find a way to allow re-connection if formation breaks.
-
-    6. Remove buttonPress() condition to continue to gameState 3 after PlaceFlags?
+    5. Remove buttonPress() condition to continue to gameState 3 after PlaceFlags?
 
 ****************************/
 
@@ -107,7 +110,7 @@ void setup()
 
 void loop() 
 { 
-  if (buttonDoubleClicked())
+  if (buttonLongPressed())
   {    
     setup();
   }
@@ -214,9 +217,9 @@ void loop()
             sp.println(flag);   
             switch(flag)
             {                
-                //case STANDBY:
-                //  setup();
-                //  break;
+                case STANDBY:
+                  setup();
+                  break;
                 case PLAYER1PRESS:
                   sp.println(F("OTHER BUTTON PRESSED!"));
                   Player1Clicked++;
@@ -289,9 +292,9 @@ void loop()
         //sp.println(flag);
         switch (flag)
         {            
-          //case STANDBY:
-          //  setup();
-          //  break;
+          case STANDBY:
+            setup();
+            break;
           case NEWROUND:
             //Send player back to State 2 to listen for new color.
             sp.println(F("NEWROUND RECIEVED!"));
@@ -373,9 +376,8 @@ void standbyLoop()
     }
   }
   // Button was pressed, place flags and start game.  
-  if (buttonLongPressed())
-  {
-      sp.println(F("BUTTON LONG PRESSED"));
+  if (buttonDoubleClicked())
+  {    
       // Declare this tile as "Ref"
       gameRef = true;
       FOREACH_FACE(f)
@@ -387,7 +389,7 @@ void standbyLoop()
         else
         {
           setValueSentOnFace(COUNTDOWN, f);
-          sp.println(F("SENT COUNTDOWN")); 
+          //sp.println(F("SENT COUNTDOWN")); 
         } 
       }
       gameState = 1;
