@@ -71,7 +71,8 @@ void loop()
 			{
 				playerColor = playerColors[random(5)];
 				setColor(playerColor);
-				buttonPressed();
+				//buttonPressed();
+				readyFlash.set(500);
 				gameState = 1;
 			}
 			break;
