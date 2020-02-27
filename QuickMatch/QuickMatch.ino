@@ -1,14 +1,18 @@
 #include "Serial.h"
 
-//  "Doubles"
+//  "QuickMatch"
 //  A game by jwest.
 //  JJ
 
 /***************************
   
   ********* WHAT DID I DO LAST? ************
-  Swapped out the long press and double press to start and reset tiles.
-  Long pressing to reset sometimes triggers the count down automatically though...
+  Added comparePlayerFaces to check for previously used pattern.  Doesn't fully work,
+  adds more time to randomization.
+    ->  Would it be a good idea to turn off faces after a round, reactivate when 
+        randomization finished?
+    ->  How about a 2-dimensional array to cut down on randomization time?  Store
+        patterns beforehand and choose pattern at random?
 
   TODO:
     1. Code Refactor.
@@ -75,7 +79,18 @@ enum Flags
   //PLAYER3,    //      (Yellow Tiles)
 };
 
+byte playerPatterns[6][4] = {
+  //2 Player Patterns
+  {PLAYER1, PLAYER1, PLAYER2, PLAYER2},
+  {PLAYER1, PLAYER2, PLAYER1, PLAYER2},
+  {PLAYER1, PLAYER2, PLAYER2, PLAYER1},
+  {PLAYER2, PLAYER1, PLAYER2, PLAYER1},
+  {PLAYER2, PLAYER1, PLAYER1, PLAYER2},  
+  {PLAYER2, PLAYER2, PLAYER1, PLAYER1},  
+};
+
 byte playerFaces[6];
+byte prevFaces[6];
 
 void setup() 
 {
@@ -139,6 +154,7 @@ void loop()
       {
         setValueSentOnAllFaces(NEWROUND);
         placeFlags();
+        //if (Player1Count == 2 && Player2Count == 2 && compareFaceArrays())
         if (Player1Count == 2 && Player2Count == 2)
         {
           // Flags evenly placed, proceed.          
@@ -200,8 +216,10 @@ void loop()
           //Update Player Faces
           if (playerFaces[f] != 0)
           {          
-
+            //Set Updated FLag
             setValueSentOnFace(playerFaces[f],f);
+            //Store prevous flag
+            prevFaces[f] = f;
             
             //Debug values being sent on faces.
             //sp.println(F("SENT TO FACE"));
@@ -472,6 +490,20 @@ void placeFlags()
       }  
     } 
   }
+}
+
+bool compareFaceArrays()
+{
+  int duplicates = 0;
+  for (int i = 0; i < 6; i++)
+  {
+    if (playerFaces[i] == prevFaces[i])
+    {
+      duplicates++;
+    }
+  }
+  if (duplicates >= 4) { return false; }
+  else { return true; }
 }
 
 void startNewRound()
