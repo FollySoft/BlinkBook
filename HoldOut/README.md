@@ -13,6 +13,8 @@ The goal is simple: be the last person to keep your Blink alive.
 
 Each player gets 1 tile.  Pressing the tile's button once will flash a randomized color, indicating it's ready for the round.  Pressing the button again begins the round.
 
+After a tile "dies", it can be reset for the next round by double-clicking.  Like before, it will flash with a new randomized color to indicate that it's ready for play.
+
 ## GAMEPLAY
 
 Each Blink only has 1 second of life.  Press your Blink's button to give it another second.  
