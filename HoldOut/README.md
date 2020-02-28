@@ -5,7 +5,7 @@
 |------------------|:-----------------:|:--------------------:|-----------------:|
 | 2 - 12            | 2 - 12             |  ~ 5-10 minutes    | 12 & Up          |
 
-HoldOut is a simple game, inspired by self-effacing games like [Chicanery](http://chicanery.auntiepixelante.com/) by Anna Anthropy and [B.U.T.T.O.N](https://gutefabrik.com/button.html) by Die Gute Fabrik.  
+HoldOut is a simple game, inspired by [Chicanery](http://chicanery.auntiepixelante.com/) by Anna Anthropy.  
 
 The goal is simple: be the last person to keep your Blink alive.
 
@@ -21,4 +21,4 @@ Keep your Blink alive... __by any means necessary__.
 
 ## WIN CONDITION
 
-The winner is the last person to keep their Blink alive.  Double clicking the tile's button after it's light fades will return it to the "ready" state.
+The winner is the last player to keep their Blink alive.  Double clicking the tile's button after it's light fades will return it to the "ready" state.
