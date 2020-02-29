@@ -17,10 +17,10 @@ After a tile "dies", it can be reset for the next round by double-clicking.  Lik
 
 ## GAMEPLAY
 
-Each Blink only has 1 second of life.  Press your Blink's button to give it another second.  
+Each Blink only has 1 second of life.  Press your Blink's button to reset the 1-second lifespan.  
 
-Keep your Blink alive... __by any means necessary__.
+Keep your Blink alive... ***__by any means necessary__***.
 
 ## WIN CONDITION
 
-The winner is the last player to keep their Blink alive.  Double clicking the tile's button after it's light fades will return it to the "ready" state.
+The winner is the last player to keep their Blink alive.
