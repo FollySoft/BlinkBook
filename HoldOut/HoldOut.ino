@@ -1,7 +1,7 @@
 #include "Serial.h"
 
-//  "HoldOut"
-//  A game by jwest.
+//  "HoldOut" - A game by jwest.
+//	Inspired by the game "Chicanery", by Anna Anthropy.
 //  JJ
 
 Timer readyFlash;
@@ -20,6 +20,7 @@ void setup()
 {		
 	brightness = 255;
 	gameState = 0;
+	randomize();
 }
 
 void loop()
