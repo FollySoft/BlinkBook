@@ -53,7 +53,8 @@ void loop()
 			}	
 			break;
 		/********* Play State *********/
-		case 2:		
+		case 2:
+			setValueSentOnAllFaces(ALIVE);
 			if (millis() % 3 == 0)
 			{
 				brightness -= 5;
@@ -68,6 +69,13 @@ void loop()
 			break;
 		/********* Dead State *********/
 		case 3:
+			FOREACH_FACE(f)
+			{
+				if (getLastValueReceivedOnFace(f) == ALIVE)
+				{
+					gameState = 2;
+				}
+			}
 			if (buttonDoubleClicked())
 			{
 				playerColor = playerColors[random(5)];
