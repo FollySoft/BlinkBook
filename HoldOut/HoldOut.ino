@@ -16,6 +16,12 @@ int gameState = 0;
 Color playerColors[6] = {RED, ORANGE, YELLOW, GREEN, BLUE, MAGENTA};
 Color playerColor;
 
+enum Flags
+{
+  //States of each individual tile while running.
+  ALIVE,      // -> 0
+};
+
 void setup()
 {		
 	brightness = 255;
@@ -54,7 +60,7 @@ void loop()
 			break;
 		/********* Play State *********/
 		case 2:
-			setValueSentOnAllFaces(ALIVE);
+			//setValueSentOnAllFaces(ALIVE);
 			if (millis() % 3 == 0)
 			{
 				brightness -= 5;
@@ -69,13 +75,27 @@ void loop()
 			break;
 		/********* Dead State *********/
 		case 3:
-			FOREACH_FACE(f)
+			//Revive
+			if (!isAlone())
 			{
-				if (getLastValueReceivedOnFace(f) == ALIVE)
+				if (millis() % 3 == 0)
 				{
-					gameState = 2;
-				}
+					brightness += 3;
+					setColor(dim(playerColor, brightness));
+					if (brightness == 255)
+					{
+						//Blink when full?
+						gameState = 2;
+					}
+				}				
 			}
+			//Stay dead if connection is broken.
+			else
+			{
+				setColor(OFF);
+				brightness = 0;
+			}
+
 			if (buttonDoubleClicked())
 			{
 				playerColor = playerColors[random(5)];
