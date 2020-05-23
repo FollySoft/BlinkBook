@@ -60,7 +60,7 @@ void loop()
 			break;
 		/********* Play State *********/
 		case 2:
-			//setValueSentOnAllFaces(ALIVE);
+			setValueSentOnAllFaces(ALIVE);
 			if (millis() % 3 == 0)
 			{
 				brightness -= 5;
@@ -76,24 +76,27 @@ void loop()
 		/********* Dead State *********/
 		case 3:
 			//Revive
-			if (!isAlone())
+			FOREACH_FACE(f)
 			{
-				if (millis() % 3 == 0)
+				if (!isValueReceivedOnFaceExpired(f))
 				{
-					brightness += 3;
-					setColor(dim(playerColor, brightness));
-					if (brightness == 255)
+					if (millis() % 3 == 0)
 					{
-						//Blink when full?
-						gameState = 2;
-					}
-				}				
-			}
-			//Stay dead if connection is broken.
-			else
-			{
-				setColor(OFF);
-				brightness = 0;
+						brightness += 3;
+						setColor(dim(playerColor, brightness));
+						if (brightness == 255)
+						{
+							//Blink when full?
+							gameState = 2;
+						}
+					}				
+				}
+				//Stay dead if connection is broken.
+				else
+				{
+					setColor(OFF);
+					brightness = 0;
+				}
 			}
 
 			if (buttonDoubleClicked())
