@@ -13,13 +13,17 @@ bool playerFound = false;
 int brightness = 0;
 int gameState = 0;
 
+int revivingFace = 0;
+
 Color playerColors[6] = {RED, ORANGE, YELLOW, GREEN, BLUE, MAGENTA};
 Color playerColor;
 
 enum Flags
 {
   //States of each individual tile while running.
-  ALIVE,      // -> 0
+  READY,		// -> 0
+  ALIVE,		// -> 1
+  DEAD,			// -> 2
 };
 
 void setup()
@@ -34,31 +38,27 @@ void loop()
 	switch (gameState)
 	{
 		/********* Standby State *********/
+		
 		case 0:
-			playerColor = playerColors[random(5)];
-			if (buttonSingleClicked())
-			{				
-				setColor(playerColor);
-				buttonPressed();
-				gameState = 1;
-			}
+			playerColor = playerColors[random(5)];			
+			setColor(playerColor);			
+			gameState = 1;
 			break;
+		
 		/********* Ready State *********/
+		
 		case 1:
-			if (readyFlash.isExpired()) 
-			{
-				readyLEDOn = !readyLEDOn;
-				if (readyLEDOn) { setColor(playerColor); }
-				else { setColor(OFF); }      
-				readyFlash.set(500);   // Flash again in 500 millseconds  
-			} 
+			setValueSentOnAllFaces(READY);
+			readyFlashFunc();
 			if (buttonSingleClicked())
 			{
 				setColor(playerColor);	
 				gameState = 2;
 			}	
 			break;
+		
 		/********* Play State *********/
+		
 		case 2:
 			setValueSentOnAllFaces(ALIVE);
 			if (millis() % 3 == 0)
@@ -73,40 +73,82 @@ void loop()
 				gameState = 3;
 			}
 			break;
+		
 		/********* Dead State *********/
-		case 3:
-			//Revive
+		
+		case 3:			
+			setValueSentOnAllFaces(DEAD);
+			setColor(OFF);
+			brightness = 0;
+			// Jump to revival state if re-attached to a live tile.
 			FOREACH_FACE(f)
 			{
-				if (!isValueReceivedOnFaceExpired(f))
+				if (didValueOnFaceChange(f) &&
+					!isValueReceivedOnFaceExpired(f) &&
+					getLastValueReceivedOnFace(f) == ALIVE)
 				{
-					if (millis() % 3 == 0)
-					{
-						brightness += 3;
-						setColor(dim(playerColor, brightness));
-						if (brightness == 255)
-						{
-							//Blink when full?
-							gameState = 2;
-						}
-					}				
-				}
-				//Stay dead if connection is broken.
-				else
-				{
-					setColor(OFF);
-					brightness = 0;
+					revivingFace = f;	
+					gameState = 4;
 				}
 			}
 
+			// Hard reset to ready state.
 			if (buttonDoubleClicked())
 			{
 				playerColor = playerColors[random(5)];
 				setColor(playerColor);
-				//buttonPressed();
 				readyFlash.set(500);
 				gameState = 1;
 			}
 			break;
+		
+		/********* Revive State *********/
+		
+		case 4:
+			//If connection is broken before ready, return to dead state.
+			
+			if (isAlone() || isValueReceivedOnFaceExpired(revivingFace)) 
+			{ 
+				gameState = 3; 
+			}
+			if (didValueOnFaceChange(revivingFace) && 
+				getLastValueReceivedOnFace(revivingFace) != ALIVE)
+			{
+				gameState = 3;
+			}
+
+			// Fade light in until full, return to Play state.
+			if (millis() % 3 == 0)
+			{
+				if (brightness < 255)
+				{
+					brightness += 3;
+					setColor(dim(playerColor, brightness));
+				}
+				else if (brightness == 255)
+				{
+					//Blink when full?
+					readyFlashFunc();
+					if (isValueReceivedOnFaceExpired(revivingFace) ||
+						isAlone())
+						{
+							setColor(playerColor);
+							gameState = 2;
+						}
+				}
+			}
+			break;
+
 	}
+}
+
+void readyFlashFunc()
+{
+	if (readyFlash.isExpired()) 
+	{
+		readyLEDOn = !readyLEDOn;
+		if (readyLEDOn) { setColor(playerColor); }
+		else { setColor(OFF); }      
+		readyFlash.set(500);   // Flash again in 500 millseconds  
+	} 
 }
