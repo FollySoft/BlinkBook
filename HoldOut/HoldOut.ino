@@ -14,6 +14,7 @@ int brightness = 0;
 int gameState = 0;
 
 int revivingFace = 0;
+bool reviveReady = false;
 
 Color playerColors[6] = {RED, ORANGE, YELLOW, GREEN, BLUE, MAGENTA};
 Color playerColor;
@@ -24,6 +25,7 @@ enum Flags
   READY,		// -> 0
   ALIVE,		// -> 1
   DEAD,			// -> 2
+  REVIVE,		// -> 3
 };
 
 void setup()
@@ -50,7 +52,8 @@ void loop()
 		case 1:
 			setValueSentOnAllFaces(READY);
 			readyFlashFunc();
-			if (buttonSingleClicked())
+			//if (buttonSingleClicked())
+			if (isAlone())
 			{
 				setColor(playerColor);	
 				gameState = 2;
@@ -60,17 +63,34 @@ void loop()
 		/********* Play State *********/
 		
 		case 2:
-			setValueSentOnAllFaces(ALIVE);
+			// Dim over time
+			//setValueSentOnAllFaces(ALIVE);
 			if (millis() % 3 == 0)
 			{
 				brightness -= 5;
 				setColor(dim(playerColor, brightness));
 			}
+			// Reset brightness
 			if (buttonPressed()) { brightness = 255; }
+			// Go to dead state
 			if (brightness == 0)
 			{
 				setColor(OFF);
 				gameState = 3;
+			}
+
+			// Check if any neighbors need reviving.
+			FOREACH_FACE(f)
+			{
+				if (getLastValueReceivedOnFace(f) == DEAD && 
+					!isValueReceivedOnFaceExpired(f))
+				{
+					setValueSentOnFace(REVIVE, f);
+				}
+				else
+				{
+					setValueSentOnFace(ALIVE, f);
+				}
 			}
 			break;
 		
@@ -81,11 +101,13 @@ void loop()
 			setColor(OFF);
 			brightness = 0;
 			// Jump to revival state if re-attached to a live tile.
+			if (isAlone()) { reviveReady = true; }
 			FOREACH_FACE(f)
 			{
-				if (didValueOnFaceChange(f) &&
+				// Revive only if ready and a fresh Revive message is detected.
+				if (reviveReady &&
 					!isValueReceivedOnFaceExpired(f) &&
-					getLastValueReceivedOnFace(f) == ALIVE)
+					getLastValueReceivedOnFace(f) == REVIVE)
 				{
 					revivingFace = f;	
 					gameState = 4;
@@ -106,39 +128,43 @@ void loop()
 		
 		case 4:
 			//If connection is broken before ready, return to dead state.
-			
-			if (isAlone() || isValueReceivedOnFaceExpired(revivingFace)) 
-			{ 
-				gameState = 3; 
-			}
-			if (didValueOnFaceChange(revivingFace) && 
-				getLastValueReceivedOnFace(revivingFace) != ALIVE)
+			if (reviveReady)
 			{
-				gameState = 3;
-			}
-
-			// Fade light in until full, return to Play state.
-			if (millis() % 3 == 0)
-			{
-				if (brightness < 255)
-				{
-					brightness += 3;
-					setColor(dim(playerColor, brightness));
+				if (isAlone() || isValueReceivedOnFaceExpired(revivingFace)) 
+				{ 
+					gameState = 3; 
 				}
-				else if (brightness == 255)
+				if (didValueOnFaceChange(revivingFace) && 
+					getLastValueReceivedOnFace(revivingFace) != REVIVE)
 				{
-					//Blink when full?
-					readyFlashFunc();
-					if (isValueReceivedOnFaceExpired(revivingFace) ||
-						isAlone())
-						{
-							setColor(playerColor);
-							gameState = 2;
-						}
+					gameState = 3;
 				}
-			}
-			break;
 
+				// Fade light in until full, return to Play state.
+				if (millis() % 3 == 0)
+				{
+					if (brightness < 255)
+					{
+						brightness += 3;
+						setColor(dim(playerColor, brightness));
+					}
+					else if (brightness == 255)
+					{
+						// Return to ready state.
+						reviveReady = false;
+						gameState = 1;
+						//Blink when full?
+						//readyFlashFunc();
+						//if (isValueReceivedOnFaceExpired(revivingFace) ||
+						//	isAlone())
+						//	{
+						//		setColor(playerColor);
+						//		gameState = 2;
+						//	}
+					}
+				}
+				break;
+			}
 	}
 }
 
