@@ -53,7 +53,7 @@ void loop()
 			setValueSentOnAllFaces(READY);
 			readyFlashFunc();
 			//if (buttonSingleClicked())
-			if (isAlone())
+			if (isAlone() || buttonSingleClicked())
 			{
 				setColor(playerColor);	
 				gameState = 2;
