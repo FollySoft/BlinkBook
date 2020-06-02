@@ -50,14 +50,26 @@ void loop()
 		/********* Ready State *********/
 		
 		case 1:
-			setValueSentOnAllFaces(READY);
 			readyFlashFunc();
-			//if (buttonSingleClicked())
-			if (isAlone() || buttonSingleClicked())
+			if (buttonSingleClicked())
+			//if (isAlone() || buttonSingleClicked())
 			{
 				setColor(playerColor);	
 				gameState = 2;
 			}	
+			// Check if any neighbors need reviving.
+			FOREACH_FACE(f)
+			{
+				if (getLastValueReceivedOnFace(f) == DEAD && 
+					!isValueReceivedOnFaceExpired(f))
+				{
+					setValueSentOnFace(REVIVE, f);
+				}
+				else
+				{
+					setValueSentOnFace(READY, f);
+				}
+			}
 			break;
 		
 		/********* Play State *********/
@@ -151,16 +163,9 @@ void loop()
 					else if (brightness == 255)
 					{
 						// Return to ready state.
-						reviveReady = false;
+					//	reviveReady = false;
 						gameState = 1;
-						//Blink when full?
-						//readyFlashFunc();
-						//if (isValueReceivedOnFaceExpired(revivingFace) ||
-						//	isAlone())
-						//	{
-						//		setColor(playerColor);
-						//		gameState = 2;
-						//	}
+						buttonPressed();
 					}
 				}
 				break;
