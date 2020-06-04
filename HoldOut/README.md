@@ -25,7 +25,3 @@ Keep your Blink alive... ***__by any means necessary__***.
 ## WIN CONDITION
 
 Be the last player or team alive!
-
-## SUGGESTED PLAY STYLES
-
-* __Juggler__ - 1 player arranges tiles together in a group and tries to keep as many alive as possible.

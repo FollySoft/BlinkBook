@@ -19,6 +19,8 @@ bool reviveReady = false;
 Color playerColors[6] = {RED, ORANGE, YELLOW, GREEN, BLUE, MAGENTA};
 Color playerColor;
 
+ServicePortSerial sp;
+
 enum Flags
 {
   //States of each individual tile while running.
@@ -33,6 +35,7 @@ void setup()
 	brightness = 255;
 	gameState = 0;
 	randomize();
+	sp.begin();
 }
 
 void loop()
@@ -42,6 +45,7 @@ void loop()
 		/********* Standby State *********/
 		
 		case 0:
+			sp.println(F("GameState STANDBY"));
 			playerColor = playerColors[random(5)];			
 			setColor(playerColor);			
 			gameState = 1;
@@ -50,8 +54,9 @@ void loop()
 		/********* Ready State *********/
 		
 		case 1:
+			sp.println(F("GameState READY"));
 			readyFlashFunc();
-			if (buttonSingleClicked())
+			if (buttonPressed())
 			//if (isAlone() || buttonSingleClicked())
 			{
 				setColor(playerColor);	
@@ -75,6 +80,7 @@ void loop()
 		/********* Play State *********/
 		
 		case 2:
+			sp.println(F("GameState PLAY"));
 			// Dim over time
 			//setValueSentOnAllFaces(ALIVE);
 			if (millis() % 3 == 0)
@@ -109,6 +115,7 @@ void loop()
 		/********* Dead State *********/
 		
 		case 3:			
+			sp.println(F("GameState DEAD"));
 			setValueSentOnAllFaces(DEAD);
 			setColor(OFF);
 			brightness = 0;
@@ -133,12 +140,14 @@ void loop()
 				setColor(playerColor);
 				readyFlash.set(500);
 				gameState = 1;
+				buttonPressed();
 			}
 			break;
 		
 		/********* Revive State *********/
 		
 		case 4:
+			sp.println(F("GameState REVIVE"));
 			//If connection is broken before ready, return to dead state.
 			if (reviveReady)
 			{
@@ -163,7 +172,7 @@ void loop()
 					else if (brightness == 255)
 					{
 						// Return to ready state.
-					//	reviveReady = false;
+						reviveReady = false;
 						gameState = 1;
 						buttonPressed();
 					}
