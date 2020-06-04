@@ -55,6 +55,7 @@ void loop()
 		
 		case 1:
 			sp.println(F("GameState READY"));
+
 			readyFlashFunc();
 			if (buttonPressed())
 			//if (isAlone() || buttonSingleClicked())
@@ -93,6 +94,7 @@ void loop()
 			// Go to dead state
 			if (brightness == 0)
 			{
+				buttonDoubleClicked();
 				setColor(OFF);
 				gameState = 3;
 			}
@@ -139,6 +141,7 @@ void loop()
 				playerColor = playerColors[random(5)];
 				setColor(playerColor);
 				readyFlash.set(500);
+				brightness = 255;
 				gameState = 1;
 				buttonPressed();
 			}
