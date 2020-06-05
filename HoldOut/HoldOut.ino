@@ -46,7 +46,7 @@ void loop()
 				else { setColor(OFF); }      
 				readyFlash.set(500);   // Flash again in 500 millseconds  
 			} 
-			if (buttonSingleClicked())
+			if (buttonPressed())
 			{
 				setColor(playerColor);	
 				gameState = 2;
@@ -62,6 +62,7 @@ void loop()
 			if (buttonPressed()) { brightness = 255; }
 			if (brightness == 0)
 			{
+				buttonDoubleClicked(); //Avoid skipping dead state.
 				setColor(OFF);
 				gameState = 3;
 			}
@@ -70,9 +71,11 @@ void loop()
 		case 3:
 			if (buttonDoubleClicked())
 			{
+				//Reset Variables, return to Ready State
 				playerColor = playerColors[random(5)];
 				setColor(playerColor);
-				//buttonPressed();
+				buttonPressed();
+				brightness = 255;
 				readyFlash.set(500);
 				gameState = 1;
 			}
