@@ -11,6 +11,7 @@ int playerCount = 0;
 bool playerFound = false;
 
 int brightness = 0;
+
 int gameState = 0;
 
 Color playerColors[6] = {RED, ORANGE, YELLOW, GREEN, BLUE, MAGENTA};
@@ -27,15 +28,12 @@ void loop()
 {		
 	switch (gameState)
 	{
-		/********* Standby State *********/
+		/********* Setup State *********/
 		case 0:
 			playerColor = playerColors[random(5)];
-			if (buttonSingleClicked())
-			{				
-				setColor(playerColor);
-				buttonPressed();
-				gameState = 1;
-			}
+			setColor(playerColor);
+			buttonPressed();
+			gameState = 1;
 			break;
 		/********* Ready State *********/
 		case 1:
@@ -59,6 +57,7 @@ void loop()
 				brightness -= 5;
 				setColor(dim(playerColor, brightness));
 			}
+			
 			if (buttonPressed()) { brightness = 255; }
 			if (brightness == 0)
 			{
@@ -77,7 +76,7 @@ void loop()
 				buttonPressed();
 				brightness = 255;
 				readyFlash.set(500);
-				gameState = 1;
+				gameState = 0;
 			}
 			break;
 	}
