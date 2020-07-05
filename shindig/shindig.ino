@@ -9,6 +9,7 @@
 * Name Ideas:
 *	- Brute Force
 *	- Scuffle
+*	- Frenzy
 ********************/
 
 int gameState = 0;
