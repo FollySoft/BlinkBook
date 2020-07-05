@@ -1,118 +1,83 @@
-//  "Dynamo" - A game by jwest.
-//	Inspired by the Pokemon Stadium mini-game "Thundering Dynamo".
+#include "Serial.h"
+
+//  "HoldOut" - A game by jwest.
+//	Inspired by the game "Chicanery", by Anna Anthropy.
 //  JJ
 
-int gameState = 0;
-bool gameRef = false;
+Timer readyFlash;
+bool readyLEDOn = false;
 
-byte flag;
-enum Flags
-{
-  //States of each individual tile while running.
-  STANDBY,      // -> 0
-  SETUP,    // -> 1
-  COUNTDOWN,      // -> 2 (Red Tiles)
-  EVEN_FACE,      // -> 3 (Blue Tiles)
-  ODD_FACE, // -> 4 
-  PLAYER2PRESS, // -> 5
-  PLAYER1WIN,   // -> 6
-  PLAYER2WIN,   // -> 7
-  NEWROUND,     // -> 8
-  FLAGSPLACED,  // -> 9
-  READY,        // -> 10
-  //PLAYER3,    //      (Yellow Tiles)
-};
+int playerCount = 0;
+bool playerFound = false;
+
+int brightness = 0;
+
+int gameState = 0;
+
+Color playerColors[6] = {RED, ORANGE, YELLOW, GREEN, BLUE, MAGENTA};
+Color playerColor;
 
 void setup()
-{
-	gameRef = false;
-	setValueSentOnAllFaces(STANDBY);
+{		
+	brightness = 255;
+	gameState = 0;
+	randomize();
 }
 
 void loop()
-{
+{		
 	switch (gameState)
 	{
-		// ********** Standby **********
+		/********* Setup State *********/
 		case 0:
-			standbyLoop();
+			playerColor = playerColors[random(5)];
+			setColor(playerColor);
+			buttonPressed();
+			gameState = 1;
 			break;
-
-    	// ********** Setup **********
-	    case 1:
-			// Countdown Display
-			setupLoop();
+		/********* Ready State *********/
+		case 1:
+			if (readyFlash.isExpired()) 
+			{
+				readyLEDOn = !readyLEDOn;
+				if (readyLEDOn) { setColor(playerColor); }
+				else { setColor(OFF); }      
+				readyFlash.set(500);   // Flash again in 500 millseconds  
+			} 
+			if (buttonPressed())
+			{
+				setColor(playerColor);	
+				gameState = 2;
+			}	
+			break;
+		/********* Play State *********/
+		case 2:		
+			if (millis() % 3 == 0)
+			{
+				brightness -= 5;
+				setColor(dim(playerColor, brightness));
+			}
+			
+			if (buttonPressed()) { brightness = 255; }
+			if (brightness == 0)
+			{
+				buttonDoubleClicked(); //Avoid skipping dead state.
+				setColor(OFF);
+				gameState = 3;
+			}
+			break;
+		/********* Dead State *********/
+		case 3:
+			if (buttonDoubleClicked())
+			{
+				//Reset Variables, return to Ready State
+				playerColor = playerColors[random(5)];
+				setColor(playerColor);
+				buttonPressed();
+				brightness = 255;
+				readyFlash.set(500);
+				gameState = 0;
+			}
 			break;
 	}
-}
-
-void standbyLoop()
-{
-  // Wait for signal from "Ref" tile.
-  if (!gameRef)
-  {
-    FOREACH_FACE(f)
-    {
-      if (isValueReceivedOnFaceExpired(f) || getLastValueReceivedOnFace(f) == STANDBY)
-        continue;
-      else if (getLastValueReceivedOnFace(f) == SETUP)
-      {
-        gameState = 1;
-      }
-    }
-  }
-  // Button was pressed, place flags and start game.  
-  if (buttonLongPressed())
-  {    
-      // Declare this tile as "Ref"
-      gameRef = true;
-      FOREACH_FACE(f)
-      {
-        //Skip Inactive Face
-        if (isValueReceivedOnFaceExpired(f))
-            continue;
-        // Begin Countdown
-        else
-        {
-          setValueSentOnFace(SETUP, f);
-        } 
-      }
-      gameState = 1;
-  }
-}
-
-void setupLoop()
-{
-  // Countdown Yellow Flash
-  if (gameRef)
-  {
-  	setColor(GREEN);
-  	FOREACH_FACE(f)
-  	{
-  		if (f %2 != 0)
-  		{
-  			setValueSentOnFace(f, EVEN_FACE);
-  		}
-  		else
-  		{
-  			setValueSentOnFace(f, ODD_FACE);	
-  		}
-  	}
-  }
-  else
-  {
-  	FOREACH_FACE(f)
-  	{
-  		flag = getLastValueReceivedOnFace(f);
-  		switch (flag)
-  		{
-  			case EVEN_FACE:
-  				setColor(YELLOW);
-  				break;
-			case ODD_FACE:
-				setColor(BLUE);
-				break;
-		}
-  	}
-  }
 }
