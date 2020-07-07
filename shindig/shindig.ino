@@ -10,9 +10,22 @@
 *	- Brute Force
 *	- Scuffle
 *	- Frenzy
+*	- (Challenge) To Arms
 ********************/
 
 int gameState = 0;
+
+enum gameWeapons
+{
+	SWORD,		// Face 0
+	AXE,		// Faces 0 & 1
+	CHAKRAM		// Faces 0, 2, & 4
+};
+int gameWeapon = 0;
+
+int swordFaces[1] = {0};
+int axeFaces[2] = {0, 1};
+int chakramFaces[3] = {0, 2, 4};
 
 int damage = 0;
 bool damageTaken = false;
@@ -22,13 +35,15 @@ Timer healthFlashTimer;
 bool healthLEDOn = false;
 int healthLEDSpeed;
 
-Color knifeColor = makeColorHSB(210, 20, 255);
+Color bladeColor = makeColorHSB(210, 20, 255);
 
 enum Flags
 {
 	EMPTY,
-	KNIFE
+	BLADE
 };
+
+ServicePortSerial sp;
 
 void setup()
 {		
@@ -41,21 +56,33 @@ void loop()
 	{
 		/********* Setup State *********/
 		case 0:
-			FOREACH_FACE(f)
+			sp.println("STATE 0");
+			// Display current weapon
+			switch (gameWeapon)
 			{
-				if (f != 0)
-				{
-					setColorOnFace(OFF, f);
-				}
-				else
-				{
-					setValueSentOnFace(KNIFE, f);
-					setColorOnFace(knifeColor, f);
-				}
+				case SWORD:
+					weaponDisplay(swordFaces, 1);
+				break;
+				case AXE:
+					weaponDisplay(axeFaces, 2);
+				break;
+				case CHAKRAM:
+					weaponDisplay(chakramFaces, 3);
+				break;
 			}
-			if (isAlone())
+			// Cycle through weapons
+			if (buttonSingleClicked())
 			{
-				gameState = 1;
+				gameWeapon++;
+				if (gameWeapon > 2) { gameWeapon = 0; }
+			}
+			// Start game
+			if (buttonDoubleClicked())
+			{
+				if (isAlone())
+				{
+					gameState = 1;
+				}
 			}
 		break;
 		/********* Play State *********/
@@ -66,7 +93,7 @@ void loop()
 				if (f != 0)
 				{
 					// Take damage ONCE when knife face detected.
-					if (getLastValueReceivedOnFace(f) == KNIFE && 
+					if (getLastValueReceivedOnFace(f) == BLADE && 
 						!isValueReceivedOnFaceExpired(f) &&
 						damagedFace[f-1] == false)
 					{
@@ -130,6 +157,29 @@ void loop()
 				gameState = 0;
 			}
 		break;
+	}
+}
+
+void weaponDisplay(int weaponFaces[], int size)
+{
+	FOREACH_FACE(f)
+	{
+		for (int i = 0; i < size; i++)
+		{
+			// If face matches face in weapon array, set blade
+			if ((f - 1) == weaponFaces[i])
+			{
+				setValueSentOnFace(BLADE, f);
+				setColorOnFace(bladeColor, f);
+				goto cont;
+			}
+			else
+			{
+				setValueSentOnFace(EMPTY, f);
+				setColorOnFace(OFF, f);
+			}
+		}
+		cont:; // Continue to next face in loop
 	}
 }
 
