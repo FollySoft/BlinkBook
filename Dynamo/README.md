@@ -33,6 +33,7 @@ After a dynamo dies, it can be reset for the next round with a double-click.  It
 | Number of Blinks | Number of Players | Duration of Gameplay | Recommended Ages |
 |------------------|:-----------------:|:--------------------:|-----------------:|
 | 2 +           | 2 +             |  ~ 5-10 minutes    | 12 & Up          |
+
 Bulb Juggler is played using Dynamo Blinks.  You are a street-performer, and juggling lightbulbs is your bread and butter.  Try to keep as many of your light bulbs lit as you can before dropping one!
 
 ### SETUP
