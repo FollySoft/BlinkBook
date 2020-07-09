@@ -87,61 +87,33 @@ void loop()
 		break;
 		/********* Play State *********/
 		case 1:
-			// Listen for knife signal
-			FOREACH_FACE(f)
+			// Listen for blade signal
+			switch (gameWeapon)
 			{
-				if (f != 0)
-				{
-					// Take damage ONCE when knife face detected.
-					if (getLastValueReceivedOnFace(f) == BLADE && 
-						!isValueReceivedOnFaceExpired(f) &&
-						damagedFace[f-1] == false)
-					{
-						damagedFace[f - 1] = true;
-						damage++;
-					}
-					//  Allow face to be damaged again after knife expires.
-					if (damagedFace[f - 1] == true &&
-						isValueReceivedOnFaceExpired(f))
-					{
-						damagedFace[f - 1] = false;
-					}
-				}
+				case SWORD:
+					weaponDetect(swordFaces, 1);
+				break;
+				
+				case AXE:
+					weaponDetect(axeFaces, 2);
+				break;
 
-				/*
-				if (f != 0)
-				{
-					// Add to damage counter if recently stabbed.
-					if (getLastValueReceivedOnFace(f) == KNIFE && 
-						!isValueReceivedOnFaceExpired(f) &&
-						!damageTaken)
-					{
-						damageTaken = true;
-						damage++;
-					}
-					// Allow for additional stabs if face empty for 200ms.
-					else if (getLastValueReceivedOnFace(f) == KNIFE &&
-							isValueReceivedOnFaceExpired(f) &&
-							damageTaken)
-					{
-						damageTaken = false;
-					}
-				}
-				*/
+				case CHAKRAM:
+					weaponDetect(chakramFaces, 3);
+				break;
 			}
-
-			if (damage > 0)
-			{
-				healthFlash(damage);
-			}
+			//if (damage > 0)
+			//{
+			//	healthFlash(damage);
+			//}
 				
 			// Jump to Dead State
-			if (damage == 3)
+			/*if (damage == 3)
 			{
 				setColor(RED);
 				buttonDoubleClicked();
 				gameState = 2;
-			}
+			}*/
 		break;
 		/********* Dead State *********/
 		case 2:
@@ -181,6 +153,51 @@ void weaponDisplay(int weaponFaces[], int size)
 		}
 		cont:; // Continue to next face in loop
 	}
+}
+
+void weaponDetect(int weaponFaces[], int size)
+{
+	FOREACH_FACE(f)
+	{
+		if (!compareFaces(f, weaponFaces, size))
+		{
+			// Take damage ONCE when blade face detected.
+			if (getLastValueReceivedOnFace(f) == BLADE && 
+				!isValueReceivedOnFaceExpired(f) &&
+				damagedFace[f - 1] == false)
+			{
+				damagedFace[f - 1] = true;
+				setColorOnFace(RED, f);
+				damage++;
+			}
+			//  Allow face to be damaged again after blade expires.
+			if (damagedFace[f - 1] == true &&
+				isValueReceivedOnFaceExpired(f))
+			{
+				damagedFace[f - 1] = false;
+			}
+		}
+		else
+		{
+			continue;
+		}
+	}
+}
+
+
+bool compareFaces(int blinkFace, int weaponFaces[], int size)
+{
+	bool matchFound = false;
+	for (int i = 0; i < size; i++)
+	{
+		if ((blinkFace - 1) == weaponFaces[i])
+		{
+			matchFound = true;
+			return matchFound;
+		}
+		else { continue; }
+	}
+	if (matchFound == false) { return matchFound; }
 }
 
 void healthFlash(int damage)
