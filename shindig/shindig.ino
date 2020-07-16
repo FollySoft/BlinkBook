@@ -1,8 +1,12 @@
 #include "Serial.h"
 
 //  "shindig" - A game by jwest.
+//
 //	Mercy is the mark of great men.  
-//	I guess we're all right.
+//	I guess we're just good men.
+//
+//	...well, we're alright.
+//
 //  JJ
 
 /********************
@@ -35,7 +39,7 @@ Timer healthFlashTimer;
 bool healthLEDOn = false;
 int healthLEDSpeed;
 
-Color bladeColor = makeColorHSB(210, 20, 255);
+Color bladeColor = makeColorHSB(210, 20, 220);
 
 enum Flags
 {
@@ -61,7 +65,7 @@ void loop()
 			switch (gameWeapon)
 			{
 				case SWORD:
-					weaponDisplay(swordFaces, 1);
+					weaponDisplay(swordFaces, 1);					
 				break;
 				case AXE:
 					weaponDisplay(axeFaces, 2);
@@ -92,28 +96,41 @@ void loop()
 			{
 				case SWORD:
 					weaponDetect(swordFaces, 1);
+					if (damage > 0)
+					{
+						healthFlash(damage, swordFaces, 1);
+					}
 				break;
 				
 				case AXE:
 					weaponDetect(axeFaces, 2);
+					if (damage > 0)
+					{
+						healthFlash(damage, axeFaces, 2);
+					}
 				break;
 
 				case CHAKRAM:
 					weaponDetect(chakramFaces, 3);
+					if (damage > 0)
+					{
+						healthFlash(damage, chakramFaces, 3);
+					}
 				break;
 			}
-			//if (damage > 0)
-			//{
-			//	healthFlash(damage);
-			//}
+			
+			/*if (damage > 0)
+			{
+				healthFlash(damage);
+			}*/
 				
-			// Jump to Dead State
-			/*if (damage == 3)
+			//Jump to Dead State
+			if (damage == 3)
 			{
 				setColor(RED);
 				buttonDoubleClicked();
 				gameState = 2;
-			}*/
+			}
 		break;
 		/********* Dead State *********/
 		case 2:
@@ -134,6 +151,9 @@ void loop()
 
 void weaponDisplay(int weaponFaces[], int size)
 {
+	byte currentBrightness = max(225, random(255));
+	byte currentHue = map(max(20, random(40)), 0, 360, 0, 255);
+	
 	FOREACH_FACE(f)
 	{
 		for (int i = 0; i < size; i++)
@@ -148,12 +168,14 @@ void weaponDisplay(int weaponFaces[], int size)
 			else
 			{
 				setValueSentOnFace(EMPTY, f);
-				setColorOnFace(OFF, f);
+				setColorOnFace(makeColorHSB(currentHue, 255, currentBrightness), f);
+				//setColorOnFace(OFF, f);
 			}
 		}
 		cont:; // Continue to next face in loop
 	}
 }
+
 
 void weaponDetect(int weaponFaces[], int size)
 {
@@ -200,7 +222,7 @@ bool compareFaces(int blinkFace, int weaponFaces[], int size)
 	if (matchFound == false) { return matchFound; }
 }
 
-void healthFlash(int damage)
+void healthFlash(int damage, int weaponFaces[], int size)
 {
 	switch (damage)
 	{
@@ -229,17 +251,23 @@ void healthFlash(int damage)
 		{ 
 			FOREACH_FACE(f)
 			{
-				if (f != 0) { setColorOnFace(RED, f); }
+				if (!compareFaces(f, weaponFaces, size)) 
+				{ 
+					setColorOnFace(RED, f); 
+				}
 			}
 		}
 		else
 		{
 			FOREACH_FACE(f)
 			{
-				if (f != 0) { setColorOnFace(OFF, f); }
+				if (!compareFaces(f, weaponFaces, size))  
+				{ 
+					setColorOnFace(OFF, f); 
+				}
 			}
 		}
 		healthFlashTimer.set(healthLEDSpeed); 
-	} 
+	}	
 
 }
